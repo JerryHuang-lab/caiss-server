@@ -297,6 +297,11 @@ public class EventLogger {
 			logger.error("#>>>>>>>>>>>AsyncScheduleProvider_is_not_setted<<<<<<<<<<<<<<");
 		}
 	}
+	public static void logScheduleCenterNotExisted(Event event) {
+		if(isErrorEnabled()){
+			logger.error("#log scheduleCenter is not existed :{}",event.toString());
+		}
+	}
 
 	public static void logEventTraceUUidRepeated(Event event) {
 		if(isErrorEnabled()){

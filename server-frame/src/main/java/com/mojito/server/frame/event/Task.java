@@ -1,8 +1,9 @@
 package com.mojito.server.frame.event;
 
-import com.mojito.server.frame.annotation.TaskDesc;
 import com.mojito.server.frame.annotation.Schedule;
+import com.mojito.server.frame.annotation.TaskDesc;
 import com.mojito.server.frame.asynctask.ScheduleCenter;
+import com.mojito.server.frame.event.exception.EventException;
 import com.mojito.server.frame.event.log.EventLogger;
 import com.mojito.server.frame.event.result.EventHandlerResult;
 import com.mojito.server.frame.event.result.EventTriggerResult;
@@ -36,9 +37,17 @@ public abstract class Task extends AbstractEventHandler {
 
     public final EventHandlerResult execute(Event event){
         init();
-        if(getAsyncAnno() != null && !"Schedule".equals(event.getEventSource())){
+        if(getScheduleAnno() != null && "!schedule".equals(event.getEventSource())){
             /*如果是异步任务 则执行异步责任中心*/
-            return ScheduleCenter.getInstance().executeTask(event, this, getAsyncAnno());
+            ScheduleCenter scheduleCenter = ScheduleCenter.getScheduleCenter(scheduleAnno.scheduleType());
+            if(null == scheduleCenter){
+                EventLogger.logScheduleCenterNotExisted(event);
+                return EventHandlerResult.getExceptionResult(new EventException("scheduleCenter is not existed,scheduleType:"+scheduleAnno.scheduleType()));
+            } else {
+                return scheduleCenter.executeTask(event,this,scheduleAnno);
+            }
+
+
         }
         EventHandlerResult handleResult = null;
         try{
@@ -110,7 +119,7 @@ public abstract class Task extends AbstractEventHandler {
         return  taskName;
     }
 
-    private Schedule getAsyncAnno(){
+    private Schedule getScheduleAnno(){
         if(scheduleAnno == null){
             scheduleAnno = AnnotationUtils.getAnnotation(this.getClass(), Schedule.class);
         }

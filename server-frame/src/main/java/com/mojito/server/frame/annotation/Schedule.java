@@ -17,6 +17,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Schedule {
 
+
+    String scheduleType() default "";
+
     String[] value() default {};
     /**
      * 调度中心的任务名称
