@@ -34,6 +34,13 @@ public class EventCenter {
     private static final Map<String,List<EventHandlerGroup>> ROUTE_HANDLE_MAP = new ConcurrentHashMap<>();
 
 
+
+
+
+
+
+
+
     /**
      * 记录最后一次触发事件
      */
@@ -49,7 +56,7 @@ public class EventCenter {
             throw new EventException("event is null");
         }
         if (event.isTriggered()){
-            /*重复触发事件*/
+            /*线程不安全 重复触发事件*/
             EventLogger.logEventHasTriggered(event);
             throw new EventException("event is triggered exception");
         }
@@ -57,14 +64,17 @@ public class EventCenter {
         lastTriggeredEvent(event);
         final EventTriggerResult triggerResult = new EventTriggerResult();
         final List<EventHandlerGroup> eventHandlerGroups = ROUTE_HANDLE_MAP.get(event.getEventType());
-        Iterator<EventHandler> handlerIterator = getHandlerIterator(
+        Iterator<EventHandlerGroup> handlerGroupIterator = getHandlerIteratorGroup(
                 eventHandlerGroups, event);
-        while(handlerIterator.hasNext()){
-            EventHandler eventHandler =  handlerIterator.next();
+        while(handlerGroupIterator.hasNext()){
+            EventHandlerGroup eventHandlerGroup =  handlerGroupIterator.next();
+            EventHandler eventHandler = eventHandlerGroup.getEventHandler();
             EventHandlerResult handlerResult;
             try{
                 EventLogger.logFindHandler(event, eventHandler);
+                eventHandlerGroup.lock();
                 handlerResult = eventHandler.execute(event);
+                eventHandlerGroup.unLock();
                 /*标记触发结果已有处理*/
                 triggerResult.setHandled(true);
                 if (null != handlerResult){
@@ -86,20 +96,22 @@ public class EventCenter {
         return triggerResult;
     }
 
-    private static Iterator<EventHandler> getHandlerIterator(
-            List<EventHandlerGroup> eventHandlerTupleList,  Event event) {
-        return new EventHandlerIterator(eventHandlerTupleList, event);
+    private static Iterator<EventHandlerGroup> getHandlerIteratorGroup(
+            List<EventHandlerGroup> eventHandlerGroups,  Event event) {
+        return new EventHandlerGroupIterator(eventHandlerGroups, event);
     }
 
 
-    private static class EventHandlerIterator implements Iterator<EventHandler> {
+
+
+    private static class EventHandlerGroupIterator implements Iterator<EventHandlerGroup> {
         private List<EventHandlerGroup> eventHandlerGroups;
         private Iterator<EventHandlerGroup> groupsIterator;
         private Event event;
-        private EventHandler nextEventHandler;
+        private EventHandlerGroup nextEventHandlerGroup;
         private int endFlag;//-1代表迭代结束
 
-        public EventHandlerIterator(
+        public EventHandlerGroupIterator(
                 List<EventHandlerGroup> eventHandlerGroups, Event event) {
             this.eventHandlerGroups = eventHandlerGroups;
             this.event = event;
@@ -109,7 +121,7 @@ public class EventCenter {
         @Override
         public boolean hasNext() {
             if (endFlag == -1) {
-                nextEventHandler = null;
+                nextEventHandlerGroup = null;
                 return false;
             }
             while (true) {
@@ -118,7 +130,7 @@ public class EventCenter {
                         groupsIterator = eventHandlerGroups.iterator();
                     } else {
                         endFlag = -1;
-                        nextEventHandler = null;
+                        nextEventHandlerGroup = null;
                         return false;
                     }
                 }
@@ -127,7 +139,7 @@ public class EventCenter {
                             .next();
                     if (nextEventHandlerGroup.getEventFilters() == null
                             || nextEventHandlerGroup.getEventFilters().length == 0) {
-                        nextEventHandler = nextEventHandlerGroup.getEventHandler();
+                        this.nextEventHandlerGroup = nextEventHandlerGroup;
                         return true;
                     } else {
                         //遍历每一个过滤器，这里要求每个过滤器都通过才返回，也就是AND的关系
@@ -137,9 +149,9 @@ public class EventCenter {
                             if(filter == null) continue;
                             try{
                                 if (filter.doFilter(event)) {
-									if(nextEventHandler instanceof EventFilter){
+									if(nextEventHandlerGroup.getEventHandler() instanceof EventFilter){
 										//如果处理器本身也实现了过滤器，则用其过滤器再过滤一遍
-										if(((EventFilter)nextEventHandler).doFilter(event)){
+										if(((EventFilter)nextEventHandlerGroup.getEventHandler()).doFilter(event)){
 											continue;
 										} else {
 											pass = false;
@@ -159,7 +171,7 @@ public class EventCenter {
                             }
                         }
                         if(pass){
-                            nextEventHandler = nextEventHandlerGroup.getEventHandler();
+                            this.nextEventHandlerGroup = nextEventHandlerGroup;
                             return true;
                         }
                     }
@@ -170,8 +182,8 @@ public class EventCenter {
         }
 
         @Override
-        public EventHandler next() {
-            return nextEventHandler;
+        public EventHandlerGroup next() {
+            return nextEventHandlerGroup;
         }
 
         @Override

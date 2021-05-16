@@ -18,6 +18,10 @@ import java.lang.annotation.Target;
 public @interface Schedule {
 
 
+    /**
+     * 选择调度中心，IO调度中心，本地线程池调度中心
+     * @return
+     */
     String scheduleType() default "";
 
     String[] value() default {};

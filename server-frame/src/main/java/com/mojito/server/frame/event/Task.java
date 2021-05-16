@@ -38,7 +38,7 @@ public abstract class Task extends AbstractEventHandler {
     public final EventHandlerResult execute(Event event){
         init();
         if(getScheduleAnno() != null && "!schedule".equals(event.getEventSource())){
-            /*如果是异步任务 则执行异步责任中心*/
+            /*非调度事件 如果是异步任务 则执行异步责任中心*/
             ScheduleCenter scheduleCenter = ScheduleCenter.getScheduleCenter(scheduleAnno.scheduleType());
             if(null == scheduleCenter){
                 EventLogger.logScheduleCenterNotExisted(event);

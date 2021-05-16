@@ -21,6 +21,6 @@
 	<modules>
 		<module>server-frame</module>
 		<module>caiss-start</module>
-        <module>caissr-eference</module>
+        <module>caiss-biz</module>
     </modules>
 </project>
