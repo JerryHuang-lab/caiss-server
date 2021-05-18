@@ -14,32 +14,41 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LockSupportCache {
 
-    private static final Map<String,LockHandler> LOCK_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 需要lru对最近没有使用的进行删除
+	 */
+	private static final Map<String, LockHandler> LOCK_MAP = new ConcurrentHashMap<>();
 
-    private static final Object atomLock = new Object();
+	private static final Object atomLock = new Object();
 
 
-    public static LockHandler getLock(Lock lock){
-        LockHandler lockHandler = null;
-        if(lock.lockType().endsWith("lock")){
-            String lockKey = null;
-            if (!StringUtils.hasText(lock.lockKey())){
-                lockKey = "defaultLock";
-            } else {
-                lockKey = lock.lockKey();
-            }
+	public static LockHandler getLock(Lock lock) {
+		LockHandler lockHandler = null;
+		if (lock.lockType().endsWith("lock")) {
+			String lockKey = null;
+			if (!StringUtils.hasText(lock.lockKey())) {
+				lockKey = "defaultLock";
+			} else {
+				if (lock.lockMatch() > 0) {
+					/* 路由的key*/
+					lockKey = lockKey + lockKey.hashCode() / lock.lockMatch();
+				} else {
+					lockKey = lock.lockKey();
+				}
+
+			}
             /*用默认的锁*/
-            if (LOCK_MAP.containsKey(lockKey)){
-                lockHandler = LOCK_MAP.get(lockKey);
-            } else {
-                synchronized (atomLock) {
-                    lockHandler = RouteLock.getInstance().getLockHandler(lock);
-                    LOCK_MAP.put(lockKey, lockHandler);
-                }
-            }
+			if (LOCK_MAP.containsKey(lockKey)) {
+				lockHandler = LOCK_MAP.get(lockKey);
+			} else {
+				synchronized (atomLock) {
+					lockHandler = RouteLock.getInstance().getLockHandler(lock);
+					LOCK_MAP.put(lockKey, lockHandler);
+				}
+			}
 
-        }
-        return lockHandler;
-    }
+		}
+		return lockHandler;
+	}
 
 }

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * @create 2021/5/16
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 public @interface Lock {
 
 

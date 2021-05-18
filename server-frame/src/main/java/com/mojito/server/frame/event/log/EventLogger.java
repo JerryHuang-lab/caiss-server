@@ -1,5 +1,7 @@
 package com.mojito.server.frame.event.log;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.mojito.server.frame.annotation.EventListen;
 import com.mojito.server.frame.asynctask.ScheduleCenter;
 import com.mojito.server.frame.event.Event;
@@ -7,12 +9,8 @@ import com.mojito.server.frame.event.EventFilter;
 import com.mojito.server.frame.event.Task;
 import com.mojito.server.frame.event.handler.EventHandler;
 import com.mojito.server.frame.event.result.EventHandlerResult;
-import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.Log4jLoggerAdapter;
-
-import java.lang.reflect.Field;
 
 /**
  * @author huangwei10
@@ -25,19 +23,11 @@ public class EventLogger {
 
 	public static boolean setLevel(String level){
 		logger.warn("#set_logger_level:" + level);
-		if(logger instanceof Log4jLoggerAdapter){
-			try {
-				Field field;
-				field = Log4jLoggerAdapter.class.getDeclaredField("logger");
-				field.setAccessible(true);
-				org.apache.log4j.Logger log4jLogger = (org.apache.log4j.Logger)field.get(logger);
-				log4jLogger.setLevel(Level.toLevel(level));
-				return true;
-			} catch (Exception e) {
-				logger.error("#set_logger_level_exception", e);
-			}
-		}
-		return false;
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+		logger.warn("set log rootLevel:{},singleLevel:{}",level);
+		ch.qos.logback.classic.Logger logger = loggerContext.getLogger("root");
+		logger.setLevel(Level.toLevel(level));
+		return true;
 	}
 
 
@@ -81,7 +71,7 @@ public class EventLogger {
 		return logger.isErrorEnabled();
 	}
 
-	public static void logListen(String eventType, EventHandler handler,
+	public static void logRegist(String eventType, EventHandler handler,
 								 EventFilter... eventFilters) {
 		if(isInfoEnabled()){
 			StringBuilder sBuilder = new StringBuilder();
@@ -91,10 +81,12 @@ public class EventLogger {
 			sBuilder.append(handler.toString());
 			sBuilder.append(",filters:[");
 			boolean f = false;
-			for(EventFilter filter : eventFilters){
-				if(!f){f = true;}
-				else{sBuilder.append(",");}
-				sBuilder.append(filter == null ? "null" : filter.toString());
+			if(null != eventFilters){
+				for(EventFilter filter : eventFilters){
+					if(!f){f = true;}
+					else{sBuilder.append(",");}
+					sBuilder.append(filter == null ? "null" : filter.toString());
+				}
 			}
 			sBuilder.append("]");
 			logger.info(sBuilder.toString());

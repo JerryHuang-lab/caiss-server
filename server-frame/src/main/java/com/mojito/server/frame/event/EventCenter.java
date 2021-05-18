@@ -1,5 +1,6 @@
 package com.mojito.server.frame.event;
 
+import com.mojito.server.frame.annotation.Lock;
 import com.mojito.server.frame.event.exception.EventException;
 import com.mojito.server.frame.event.handler.EventHandler;
 import com.mojito.server.frame.event.handler.EventHandlerGroup;
@@ -8,7 +9,9 @@ import com.mojito.server.frame.event.result.EventHandlerResult;
 import com.mojito.server.frame.event.result.EventTriggerResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +35,6 @@ public class EventCenter {
      * 监听事件和处理绑定
      */
     private static final Map<String,List<EventHandlerGroup>> ROUTE_HANDLE_MAP = new ConcurrentHashMap<>();
-
-
-
-
-
-
 
 
 
@@ -78,7 +75,7 @@ public class EventCenter {
                 /*标记触发结果已有处理*/
                 triggerResult.setHandled(true);
                 if (null != handlerResult){
-                    EventLogger.logHandlerExecuted(event,eventHandler,handlerResult);
+                    EventLogger.logHandlerExecuted(event, eventHandler, handlerResult);
                     if(handlerResult.toStopEventHandling()){
                         EventLogger.logHandlerExecutedAndStopHanding(event, eventHandler);
                         break;
@@ -194,8 +191,52 @@ public class EventCenter {
 
 
 
-    public void register(){
+    /**
+     * 侦听事件
+     *
+     *
+     * @param eventType 事件类型，支持*星号通配符，支持正则表达式（/regex/），不能为空
+     * @param handler 处理器对象，不能为空
+     * @param eventFilters 过滤器，可以为空或多个，多个过滤器之间是且的关系，所有过滤器都通过才执行处理器
+     */
+    public void doRegister(String eventType, EventHandler handler,Lock lock,
+                       EventFilter... eventFilters) {
+        if(!StringUtils.hasText(eventType)){
 
+        }
+
+        EventLogger.logRegist(eventType, handler, eventFilters);
+
+        //如果处理器本身也是过滤器，那么把过滤器添加到过滤器列表
+        if(handler instanceof EventFilter){
+            eventFilters = appendFilter((EventFilter)handler, eventFilters);
+        }
+        //暂时支持固定的事件类型
+        EventHandlerGroup eventHandlerGroup = new EventHandlerGroup(
+                handler, eventFilters, lock);
+        synchronized (ROUTE_HANDLE_MAP) {
+            List<EventHandlerGroup> eventTupleList = ROUTE_HANDLE_MAP
+                    .get(eventType);
+            if (eventTupleList == null) {
+                eventTupleList = new ArrayList<EventHandlerGroup>();
+                ROUTE_HANDLE_MAP.put(eventType, eventTupleList);
+            }
+            eventTupleList.add(eventHandlerGroup);
+        }
+    }
+
+    private EventFilter[] appendFilter(EventFilter filter,
+                                       EventFilter[] eventFilters) {
+        if(eventFilters == null || eventFilters.length == 0){
+            eventFilters = new EventFilter[1];
+            eventFilters[0] = filter;
+        } else {
+            EventFilter[] oldarray = eventFilters;
+            eventFilters = new EventFilter[eventFilters.length + 1];
+            System.arraycopy(oldarray, 0, eventFilters, 0, oldarray.length);
+            eventFilters[eventFilters.length - 1] = filter;
+        }
+        return eventFilters;
     }
 
 

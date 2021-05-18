@@ -15,10 +15,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RedissonConfig {
 
-    @Value("${spring.redis.host")
+
+    @Value("${spring.redis.database}")
+    private int databaseId;
+
+    @Value("${spring.redis.host}")
     private String hostName;
 
-    @Value("${spring.redis.port")
+    @Value("${spring.redis.port}")
     private int port;
 
     @Value("${spring.redis.password}")
@@ -27,18 +31,17 @@ public class RedissonConfig {
     @Value("${spring.redis.timeout}")
     private int timeout;
 
-    @Value("${spring.redis.lettuce.pool.max-idle}")
+    @Value("${spring.redis.pool.max-idle}")
     private int maxIdle;
 
-    @Value("${spring.redis.lettuce.pool.min-idle}")
+    @Value("${spring.redis.pool.min-idle}")
     private int minIdle;
 
 
-    @Value("${spring.redis.lettuce.pool.max-active}")
+    @Value("${spring.redis.pool.max-active}")
     private int maxActive;
 
-    @Value("${spring.redis.database}")
-    private int databaseId;
+
 
     @Bean("redissonClient")
     public RedissonClient createRedissonClient(){
