@@ -1,0 +1,25 @@
+FROM centos
+
+MAINTAINER huangwei
+#将本地的tomcat和jdk包复制到镜像里
+ADD apache-tomcat-8.5.68 /usr/local/tomcat/apache-tomcat-8.5.68/
+ADD jdk1.8.0_181 /usr/local/jdk/jdk1.8.0_181/
+
+#变量
+ENV JAVA_HOME=/usr/local/jdk/jdk1.8.0_181
+ENV CATALINA_HOME=/usr/local/tomcat/apache-tomcat-8.5.68
+ENV PATH=$CATALINA_HOME/bin:$JAVA_HOME/bin:$PATH
+
+LABEL name="caiss-server" version="0.1" author="huangwei"
+#端口
+EXPOSE 9090
+ 
+#启动时运行tomcat
+CMD ["/usr/local/tomcat/apache-tomcat-8.5.68/bin/catalina.sh","run"]
+
+
+#启动命令 docker run -d -p9090:9090 -v /opt/webapps:/usr/local/tomcat/apache-tomcat-8.5.68/webapps  --name caiss #caiss-server:v0.1
+
+
+
+

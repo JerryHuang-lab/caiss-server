@@ -57,8 +57,9 @@ public class RegisterNodeHandler implements EventHandler{
 						-> nodeData.equals
 						(ownerMasterNode)).collect(Collectors.toList());
 				if(BizUtil.checkListNotEmpty(masterDatas)){
-					eventHandlerResult = EventHandlerResult.getSuccessResult();
+					/*如果主节点已经有了*/
 				} else {
+					/*注册从节点*/
 					NodeData ownerSlaveNode = new NodeData(NetHandler.getIp(), environment.getProperty("local.server.port"),
 							"slave");
 					nodekey = createRegisterNodeKey("slave");

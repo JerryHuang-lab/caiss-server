@@ -2,10 +2,13 @@ package com.mojito.server.frame.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.Codec;
+import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 /**
  * @author hw
@@ -46,8 +49,13 @@ public class RedissonConfig {
     @Bean("redissonClient")
     public RedissonClient createRedissonClient(){
         Config redissonConfig = new Config();
-        redissonConfig.useSingleServer().setAddress(buildRedisAddress()).setPassword(password);
+        redissonConfig.useSingleServer().setAddress(buildRedisAddress());
         redissonConfig.useSingleServer().setDatabase(databaseId).setConnectionPoolSize(maxActive).setConnectionMinimumIdleSize(minIdle).setConnectTimeout(timeout);
+        if(StringUtils.hasText(password)){
+            redissonConfig.useSingleServer().setPassword(password);
+        }
+        Codec codec = new JsonJacksonCodec();
+        redissonConfig.setCodec(codec);
         return Redisson.create(redissonConfig);
     }
 

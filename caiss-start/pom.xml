@@ -13,7 +13,7 @@
     <artifactId>caiss-start</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>caiss-start</name>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
@@ -21,11 +21,17 @@
             <artifactId>caiss-biz</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 
     <build>
-        <resources>
+        <!--<resources>
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
@@ -43,51 +49,33 @@
                 </includes>
                 <filtering>false</filtering>
             </resource>
-        </resources>
+        </resources>-->
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <!-- start模块在jar包中排除工程配置文件 -->
-                    <excludes>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>sync/**</exclude>
-                        <exclude>startupConfig.xml</exclude>
-                    </excludes>
-                </configuration>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-            <!-- 设置源文件编码方式 -->
-         <!--   <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>-->
-            <!-- 打包source文件为jar文件 -->
-           <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.2.3</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <!-- 指定 war 包中需要包含的文件 -->
+                    <packagingIncludes>
+                        <!-- 程序启动类，需要打包到 war 包中 -->
+                        WEB-INF/classes/com/mojito/caiss/server/CaissServerApplication.class,
+                        WEB-INF/classes/application.properties,
+                        WEB-INF/classes/logback-spring.xml,
+                        <!-- 所有的依赖包需要添加到 war 包中 -->
+                        WEB-INF/lib/*
+                    </packagingIncludes>
+                    <!-- 打完 war 包之后，将 war 包拷贝到 out/xauth-authc 目录下，之后 HiDO 会拷贝到组件包的 bin 目录下。 -->
+                    <outputDirectory>./output/caiss-server</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.mojito.caiss.server.CaissServerApplication</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
