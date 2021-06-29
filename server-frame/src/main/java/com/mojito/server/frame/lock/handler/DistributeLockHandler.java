@@ -1,7 +1,7 @@
 package com.mojito.server.frame.lock.handler;
 
 import com.mojito.server.frame.annotation.Lock;
-import com.mojito.server.frame.config.SpringContext;
+import com.mojito.server.frame.config.ManageBeanRegistryFactory;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
@@ -15,12 +15,15 @@ import java.util.concurrent.TimeUnit;
 public class DistributeLockHandler implements LockHandler{
 
 
-    private RLock rLock = null;
+    public DistributeLockHandler(Lock lock) throws Exception {
+        RedissonClient redissonClient =  ManageBeanRegistryFactory.getInstance().getRedissonClient();
+        if(null != redissonClient){
+            rLock = redissonClient.getLock(lock.lockKey());
+        }
 
-    public DistributeLockHandler(Lock lock){
-        RedissonClient redissonClient = (RedissonClient) SpringContext.getApplicationContext().getBean("redissonClient");
-        rLock = redissonClient.getLock(lock.lockKey());
     }
+
+    private RLock rLock = null;
 
     @Override
     public void lock(Lock lock) {

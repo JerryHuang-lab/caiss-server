@@ -9,7 +9,6 @@ import com.mojito.server.frame.event.result.EventHandlerResult;
 import com.mojito.server.frame.event.result.EventTriggerResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,7 +82,7 @@ public abstract class Task extends AbstractEventHandler {
         if(!inited) {
             super.init();
             /*获取Task类的子类*/
-            scheduleAnno = AnnotationUtils.getAnnotation(this.getClass(), Schedule.class);
+            scheduleAnno = this.getClass().getAnnotation(Schedule.class);
             taskName = getTaskName();
             if(taskMap.containsKey(taskName)){
                 EventLogger.logTaskNameDuplicates(taskName, this);
@@ -104,7 +103,7 @@ public abstract class Task extends AbstractEventHandler {
     public String getTaskName(){
         //如果有注解
         if(null == taskName){
-            TaskDesc taskDescAnno = AnnotationUtils.getAnnotation(this.getClass(), TaskDesc.class);
+            TaskDesc taskDescAnno = this.getClass().getAnnotation(TaskDesc.class);
             if(null != taskDescAnno){
                 this.taskName = taskDescAnno.value();
             }
@@ -121,7 +120,7 @@ public abstract class Task extends AbstractEventHandler {
 
     private Schedule getScheduleAnno(){
         if(scheduleAnno == null){
-            scheduleAnno = AnnotationUtils.getAnnotation(this.getClass(), Schedule.class);
+            scheduleAnno = this.getClass().getAnnotation(Schedule.class);
         }
         return scheduleAnno;
     }

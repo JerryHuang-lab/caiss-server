@@ -22,5 +22,6 @@
 		<module>server-frame</module>
 		<module>caiss-start</module>
         <module>caiss-biz</module>
-    </modules>
+		<module>cluster-agent</module>
+	</modules>
 </project>

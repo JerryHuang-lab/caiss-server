@@ -2,7 +2,7 @@ package com.mojito.server.frame.lock;
 
 import com.mojito.server.frame.annotation.Lock;
 import com.mojito.server.frame.lock.handler.LockHandler;
-import org.springframework.util.StringUtils;
+import com.mojito.server.frame.util.StringUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,11 +22,11 @@ public class LockSupportCache {
 	private static final Object atomLock = new Object();
 
 
-	public static LockHandler getLock(Lock lock) {
+	public static LockHandler getLock(Lock lock) throws Exception {
 		LockHandler lockHandler = null;
 		if (lock.lockType().endsWith("lock")) {
 			String lockKey = null;
-			if (!StringUtils.hasText(lock.lockKey())) {
+			if (!StringUtil.isNotEmpty(lock.lockKey())) {
 				lockKey = "defaultLock";
 			} else {
 				if (lock.lockMatch() > 0) {

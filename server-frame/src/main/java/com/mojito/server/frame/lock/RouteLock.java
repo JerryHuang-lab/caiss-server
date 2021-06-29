@@ -34,7 +34,7 @@ public class RouteLock{
     }
 
 
-    public LockHandler getLockHandler(Lock lock){
+    public LockHandler getLockHandler(Lock lock) throws Exception {
         if(lock.lockType().equalsIgnoreCase("lock")){
             return new ReentantLockHandler();
         } else if(lock.lockType().equalsIgnoreCase("dis_lock")){

@@ -25,13 +25,13 @@ public class EventHandlerGroup {
         this.lock = lock;
     }
 
-    public void lock() {
+    public void lock() throws Exception {
         if(null != lock){
             LockSupportCache.getLock(lock).lock(lock);
         }
     }
 
-    public void unLock() {
+    public void unLock() throws Exception {
         if(null != lock){
             LockSupportCache.getLock(lock).unLock(lock);
         }

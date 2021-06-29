@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>com.mojito</groupId>
-            <artifactId>server-frame</artifactId>
+            <artifactId>cluster-agent</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -27,7 +27,10 @@
                     <artifactId>spring-boot-starter-tomcat</artifactId>
                 </exclusion>
             </exclusions>
-
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

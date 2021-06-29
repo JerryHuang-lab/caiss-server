@@ -10,6 +10,8 @@ import com.mojito.server.frame.event.result.EventHandlerResult;
 
 public interface EventHandler {
 
+
+
     /**
      * @param event
      * @return

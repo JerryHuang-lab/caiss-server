@@ -60,6 +60,9 @@ public class Event {
     public static Event buildEvent(Event event, String eventType, String eventSource) {
         event.eventType = eventType;
         event.eventSource = eventSource;
+        if(null == event.eventContext){
+            event.eventContext = new EventContext();
+        }
         return event;
     }
 
@@ -106,4 +109,6 @@ public class Event {
     public void setTriggered(boolean triggered) {
         this.triggered = triggered;
     }
+
+
 }

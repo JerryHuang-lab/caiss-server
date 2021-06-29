@@ -21,10 +21,7 @@
     local result = {}
 	if map ~= nil then
 		for k, v in pairs(map) do
-			local sk = split(k,'_')
-			if(sk[2] == 'master') then
-				table.insert(result,v)
-			end
+			table.insert(result,v)
 		end
 	end
 	return result
@@ -35,7 +32,7 @@
   local red = redis:new()
   local ok,err = red.connect(red, "172.17.0.1", 6379)
 	if ok then
-		local route  = red:hgetall('registerNode')
+		local route  = red:hgetall('register_master_node')
 		
 		if next(route) ~= nil then
 		  local map = array_to_hash(route)

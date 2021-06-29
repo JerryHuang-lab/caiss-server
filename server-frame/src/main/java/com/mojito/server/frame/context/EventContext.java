@@ -11,9 +11,9 @@ import java.util.Map;
 public class EventContext {
 
 
-    private static Map<String, Object> transferMap;
+    private Map<String, Object> transferMap;
 
-    public static Object getObject(String key){
+    public  Object getObject(String key){
         if(null == transferMap){
             transferMap = new HashMap<>();
             return null;
@@ -23,7 +23,7 @@ public class EventContext {
         return null;
     }
 
-    public static void storeTransferData(String key, Object o){
+    public  void storeTransferData(String key, Object o){
         if(null == transferMap){
             transferMap = new HashMap<>();
         }
